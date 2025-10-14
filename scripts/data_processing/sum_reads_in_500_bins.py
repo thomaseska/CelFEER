@@ -45,8 +45,6 @@ def get_methylation_counts(file, regions_dict):
             meth = np.array(line[3:], dtype=np.float64)
             binstart = 500*math.floor(start/500)
             binend = 500*math.ceil(end/500)
-            startrange = range(binstart, binend, 500)
-            endrange = range(binstart+499, binend+1, 500)
             # if (chrom, binstart, binend) in regions_dict:
             #     regions_dict[(chrom, binstart)] += meth
             for region in regions_dict[chrom]:
