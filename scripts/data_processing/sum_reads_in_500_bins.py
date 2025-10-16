@@ -20,11 +20,7 @@ def get_region_dict(file):
         for line in regions_file:
             chrom, start, end = line[0], int(line[1]), int(line[2])
 
-            regions_dict[chrom].append({
-                "start": start,
-                "end": end,
-                "meth_frac": np.zeros(5)
-            })
+            regions_dict[(chrom, start, end)] = np.zeros(5)
 
     return regions_dict
 
@@ -45,16 +41,14 @@ def get_methylation_counts(file, regions_dict):
             meth = np.array(line[3:], dtype=np.float64)
             binstart = 500*math.floor(start/500)
             binend = 500*math.ceil(end/500)
-            # if (chrom, binstart, binend) in regions_dict:
-            #     regions_dict[(chrom, binstart)] += meth
-            for region in regions_dict[chrom]:
-                if region["start"] < binstart:
-                    continue
-                elif region["end"] > binend:
-                    break
-                else:
-                    region["meth_frac"] += meth
-            if linecounter % 5000 == 0:
+
+            startrange = list(range(binstart, binend, 500))
+            endrange = list(range(binstart+499, binend+1, 500))
+            for i in range(len(startrange) - 1):
+                if (chrom, startrange[i], endrange[i]) in regions_dict:
+                    regions_dict[(chrom, startrange[i], endrange[i])] += meth
+            
+            if linecounter % 100000 == 0:
                 print(f"Processed {linecounter} lines.")
 
 
@@ -68,12 +62,11 @@ def write_bed_file(output_file, regions_dict):
     with open(output_file, "w") as output:
         bed_file = csv.writer(output, delimiter="\t",  lineterminator="\n")
 
-        for chrom in regions_dict:
-            for region in regions_dict[chrom]:
-                values = region["meth_frac"]
-                bed_file.writerow(
-                    [chrom] + [region["start"]] + [region["end"]] + list(values)
-                )
+        for chrom, start, end in regions_dict:
+            values = regions_dict[(chrom, start, end)]
+            bed_file.writerow(
+                [chrom] + [start] + [end] + list(values)
+            )
 
 
 if __name__ == "__main__":
