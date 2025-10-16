@@ -23,7 +23,7 @@ if __name__ == "__main__":
     readfile = sys.argv[2]
 
     reads = []
-    name = os.path.basename(readfile).split('.')[0].split('_')[2]
+    name = os.path.basename(readfile).split('.')[0]
     outfile = out_dir + '/' + name + '.bed'
     with open(readfile, 'r') as f:
         meth_count = 0
