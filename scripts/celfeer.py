@@ -322,19 +322,26 @@ if __name__ == "__main__":
 
     # get header for output files
     samples, tissues = get_header(data_df_header, args.num_samples, args.unknowns)
-
-    # Run EM with the specified iterations and convergence criteria
-    random_restarts = []
-
-    for i in range(args.random_restarts):
-        alpha, beta, ll = em(
-            x, y, args.max_iterations, args.convergence
-        )
-        random_restarts.append((ll, alpha, beta))
-
-    ll_max, alpha_max, beta_max = max(
-        random_restarts
-    )  # pick best random restart per replicate
+    for i in range(10):
+        try:
+            # Run EM with the specified iterations and convergence criteria
+            random_restarts = []
+        
+            for i in range(args.random_restarts):
+                alpha, beta, ll = em(
+                    x, y, args.max_iterations, args.convergence
+                )
+                random_restarts.append((ll, alpha, beta))
+        
+            ll_max, alpha_max, beta_max = max(
+                random_restarts
+            )  # pick best random restart per replicate
+        except:
+            if i < 9:
+                continue
+            else:
+                raise
+        break
 
     # write estimates as text files
     write_output(output_alpha_file, alpha_max, tissues, samples, args.unknowns)
